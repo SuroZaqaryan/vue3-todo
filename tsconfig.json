@@ -4,6 +4,8 @@
     "module": "esnext",
     "strict": true,
     "jsx": "preserve",
+    "noImplicitAny": false,
+    "allowJs": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -26,7 +28,12 @@
     "tests/**/*.ts",
     "tests/**/*.tsx",
     "src/router/index.js",
-    "src/router/index.js"
-, "src/router/routes/login.js", "src/router/routes/home.js", "src/router/routes/home.js"  ],
+    "src/router/index.js",
+    "src/router/routes/login.js",
+    "src/router/routes/home.js",
+    "src/router/routes/home.js",
+    "src/main.js",
+    "src/main.js"
+  ],
   "exclude": ["node_modules"]
 }
