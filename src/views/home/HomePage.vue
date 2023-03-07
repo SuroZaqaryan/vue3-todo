@@ -6,6 +6,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { useUserStore } from "@/stores/user";
 import { useTodoStore } from "@/stores/todo";
 import { TodoModel } from "@/models/todo.model";
+import { v4 as uuidv4 } from "uuid";
 
 export default defineComponent({
   name: "HomePage",
@@ -96,6 +97,21 @@ export default defineComponent({
           console.log(error);
         });
     }
+
+    // watch(searchTerm, async () => {
+    //   await axios
+    //     .post("http://localhost:4000/search", {
+    //       ...filteredTodos.value,
+    //     })
+    //     .then((response) => {
+    //       const filtered = response.data;
+    //       console.log([filtered])
+    //       todoStore.todos = [filtered]; // update the filteredTodos variable
+    //     })
+    //     .catch((error) => {
+    //       console.error(error);
+    //     });
+    // });
 
     return {
       user,
