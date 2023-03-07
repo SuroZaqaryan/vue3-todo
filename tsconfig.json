@@ -15,7 +15,7 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "types": ["webpack-env"],
+    "types": ["webpack-env", "pinia-plugin-persist"],
     "paths": {
       "@/*": ["src/*"]
     },
@@ -34,6 +34,6 @@
     "src/router/routes/home.js",
     "src/main.js",
     "src/main.js"
-  ],
+, "src/stores/auth.js"  ],
   "exclude": ["node_modules"]
 }

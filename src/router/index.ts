@@ -40,10 +40,12 @@ router.beforeEach((to, from, next) => {
     const user = localStorage.getItem('user')
     if (!user) {
       next('/login')
+      return 
     } else {
       const parsedUser = JSON.parse(user)
       if (!parsedUser) {
         next('/login')
+        return 
       }
     }
   }

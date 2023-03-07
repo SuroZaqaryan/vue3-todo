@@ -1,46 +1,32 @@
 <script lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
-import { generateFakeData, Item } from "@/models/item.model";
-import { useMainStore } from "@/stores/index";
+import { useRouter } from 'vue-router'
+import { defineComponent } from "vue";
+import { getAuth, signOut } from "firebase/auth";
+import { useUserStore } from '@/stores/user';
+
 
 export default defineComponent({
   name: "App",
 
   setup() {
-    const items = ref<Item[]>([]);
+    const auth = getAuth();
+    const user = useUserStore();
+    const router = useRouter();
 
-    const mainStore = useMainStore();
-
-    onMounted(() => {
-      items.value = mainStore.items;
-    });
-
-    function createItem() {
-      mainStore.createNewItem(generateFakeData());
+    function handleSignOut() {
+      signOut(auth).then(() => {
+       // Sign-out successful.
+       localStorage.removeItem("user");
+       router.push('/login');
+      }).catch((error) => {
+        // An error happened.
+        console.log(error);
+      });
     }
-
-    function deleteItem(id: string) {
-      mainStore.deleteItem(id);
-    }
-
-    function updateItem(id: string) {
-      mainStore.updateItem(id, generateFakeData());
-    }
-
-    // const handleClickSignOut = async () => {
-    //   try {
-    //     await this.$gAuth.signOut();
-    //     localStorage.setItem("user", this.Vue3GoogleOauth.isAuthorized);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
 
     return {
-      items,
-      createItem,
-      deleteItem,
-      updateItem,
+      user,
+      handleSignOut
     };
   },
 });
@@ -50,18 +36,23 @@ export default defineComponent({
   <div class="p-5">
     <div class="max-w-1xl m-auto">
       <div class="px-8 py-5 border border-[#bdbdbd]">
+        <div class="flex justify-between rounded bg-indigo-700 p-3 mb-5">
+          <div>
+            <h2 class="text-2xl text-white font-bold">{{ user.username }} 🧑</h2>
+          </div>
+          <div>
+            <button
+              @click="handleSignOut"
+              class="bg-transparent text-white text-sm py-2 px-4 border border-white rounded"
+            >
+              Выйти из аккаунта
+            </button>
+          </div>
+        </div>
         <div class="flex justify-between mb-5">
           <div>
             <h3 class="mb-1 text-xl">Список задач</h3>
             <p class="text-gray-600">Успевай больше и ничего не забывай</p>
-          </div>
-
-          <div class="mt-2">
-            <button
-              class="bg-transparent hover:bg-gray-600 text-black-600 text-sm hover:text-white py-2 px-4 border border-gray-500 hover:border-transparent rounded"
-            >
-              Выйти
-            </button>
           </div>
         </div>
 
@@ -71,6 +62,7 @@ export default defineComponent({
               type="text"
               placeholder="Новая задача..."
               class="w-full rounded-lg text-sm border border-gray-400 focus:ring-0"
+              required
             />
           </div>
           <div class="basis-[10%]">

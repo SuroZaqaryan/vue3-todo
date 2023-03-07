@@ -3,133 +3,110 @@
     <div
       class="absolute max-w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
     >
-      <img
-        v-if="!Vue3GoogleOauth.isInit"
-        width="100"
-        height="100"
-        class="m-auto"
-        src="@/assets/icons/loader.svg"
-      />
-
-      <button
-        v-if="Vue3GoogleOauth.isInit"
-        @click="handleClickSignIn"
-        class="flex justify-center items-center w-72 hover:bg-gray-50 max-w-full p-3 rounded"
-      >
-        <img
-          class="mr-3"
-          width="20"
-          height="20"
-          src="@/assets/icons/google-icon.svg"
-        />
-        <span class="c91e62612">Continue with Google</span>
-      </button>
-
-      <!-- <button
-        @click="handleClickSignOut"
-        :disabled="!Vue3GoogleOauth.isAuthorized"
-      >
-        sign out
-      </button> -->
+    <div id="firebaseui-auth-container"></div>
+    <div id="loader">Loading...</div>
+    <br>
+    <div v-if="user.isSignedIn">
+      <button @click="handleSignOut">Sign Out</button>
     </div>
+  </div>
   </div>
 </template>
 
 <script>
-import { inject, toRefs } from "vue";
+import { useRouter } from 'vue-router'
+
+// Firebase
+import firebaseConfig from '@/firebaseConfig.js';
+
+// Pinia
+import { useUserStore } from '@/stores/user'
+
+// v9 compat packages are API compatible with v8 code
+import firebase from 'firebase/compat/app';
+
+firebase.initializeApp(firebaseConfig);
+import * as firebaseui from 'firebaseui'
+import 'firebaseui/dist/firebaseui.css'
+import { getAuth, signOut } from "firebase/auth";
+
+const auth = getAuth();
 
 export default {
-  data() {
-    return {
-      user: "",
-    };
-  },
+  setup() {
+    const router = useRouter();
+    const user = useUserStore();
 
-  methods: {
-    async handleClickSignIn() {
-      try {
-        const googleUser = await this.$gAuth.signIn();
-        if (!googleUser) {
-          return null;
+    const uiConfig = {
+      signInFlow: 'popup',
+      signinSuccessUrl: 'http://localhost:8080/',
+      signInOptions: [
+        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+        firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+        firebase.auth.GithubAuthProvider.PROVIDER_ID
+      ],
+      callbacks: {
+        signInSuccessWithAuthResult: function (authResult) {
+          user.value = authResult.user.displayName;
+          user.setUsername(authResult.user.displayName)
+          user.isSignedIn = true;
+          // localStorage.setItem('user', JSON.stringify(user));
+          router.push('/');
+ 
+          // so it doesn't refresh the page
+          return false;
+        },
+        uiShown: function() {
+          // The widget is rendered.
+          // Hide the loader.
+          document.getElementById('loader').style.display = 'none';
         }
-        localStorage.setItem("user", this.Vue3GoogleOauth.isAuthorized);
-        this.user = googleUser.getBasicProfile().getEmail();
-        this.$router.push("/");
-      } catch (error) {
-        //on fail do something
-        console.error(error);
-        return null;
       }
-    },
+    }
 
-    async handleClickGetAuthCode() {
-      try {
-        const authCode = await this.$gAuth.getAuthCode();
-        console.log("authCode", authCode);
-      } catch (error) {
-        //on fail do something
-        console.error(error);
-        return null;
-      }
-    },
+    // Initialize the FirebaseUI Widget using Firebase.
+    try {
+      var ui = new firebaseui.auth.AuthUI(firebase.auth());
+      ui.start('#firebaseui-auth-container', uiConfig);
+    } catch {
+      window.location.reload();
+    }
 
-    async handleClickSignOut() {
-      try {
-        await this.$gAuth.signOut();
-        localStorage.setItem("user", this.Vue3GoogleOauth.isAuthorized);
-        this.user = "";
-      } catch (error) {
-        console.error(error);
-      }
-    },
+    const handleSignOut = () => {
+      signOut(auth).then(() => {
+       // Sign-out successful.
+       user.value = null;
+       user.isSignedIn = false;
+       console.log('Signed out');
+       ui.start('#firebaseui-auth-container', uiConfig);
+      }).catch((error) => {
+        // An error happened.
+        console.log(error);
+      });
+    }
 
-    handleClickDisconnect() {
-      window.location.href = `https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue=${window.location.href}`;
-    },
-  },
-
-  setup(props) {
-    const { isSignIn } = toRefs(props);
-    const Vue3GoogleOauth = inject("Vue3GoogleOauth");
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    const handleClickLogin = () => {};
     return {
-      Vue3GoogleOauth,
-      handleClickLogin,
-      isSignIn,
-    };
-  },
-};
+      user,
+      handleSignOut,
+    }
+  }
+}
 </script>
 
-<style>
-button {
-  display: inline-block;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: pointer;
-  background: #fff;
-  border: 1px solid #dcdfe6;
-  color: #606266;
-  -webkit-appearance: none;
-  text-align: center;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  outline: 0;
-  margin: 0;
-  -webkit-transition: 0.1s;
-  transition: 0.1s;
-  font-weight: 500;
-  padding: 12px 20px;
-  font-size: 14px;
-  border-radius: 4px;
-  margin-right: 1em;
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+h3 {
+  margin: 40px 0 0;
 }
-
-button:disabled {
-  background: #fff;
-  color: #ddd;
-  cursor: not-allowed;
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+a {
+  color: #42b983;
 }
 </style>

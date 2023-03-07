@@ -1,69 +1,74 @@
 <template>
-  <h1>Grocery List App</h1>
-
-  <button @click="createItem">New Item</button>
-
   <div>
-    <div
-      v-for="(item, index) in items"
-      :key="index"
-      style="
-        background-color: #f5f5f5;
-        padding: 10px;
-        margin-bottom: 10px;
-        margin-top: 10px;
-      "
-    >
-      <code>{{ item }}</code>
-      <button @click="deleteItem(item.id)">Delete</button>
-      <button @click="updateItem(item.id)">Update</button>
-    </div>
+    <h1>Todo List</h1>
+    <form @submit.prevent="addTodo">
+      <input v-model="newTodoTitle" placeholder="Enter a new todo item" />
+      <button type="submit">Add</button>
+    </form>
+    <form @submit.prevent="searchTodo">
+      <input v-model="searchTerm" placeholder="Search for a todo" />
+      <button type="submit">Search</button>
+    </form>
+    <ul>
+      <li v-for="todo in filteredTodos" :key="todo.id">
+        <input type="checkbox" :checked="todo.completed" @change="toggleCompleted(todo.id)" />
+        <span :class="{ completed: todo.completed }">{{ todo.title }}</span>
+        <button @click="remove(todo.id)">X</button>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
-import { generateFakeData, Item } from "@/models/item.model";
-import { useMainStore } from "@/stores/index";
+import { defineComponent, ref, computed } from 'vue';
+import { useTodoStore, Todo } from '@/stores/index';
 
 export default defineComponent({
-  name: "App",
-
   setup() {
-    const items = ref<Item[]>([]);
+    const todoStore = useTodoStore();
 
-    const mainStore = useMainStore();
+    const newTodoTitle = ref('');
+    const searchTerm = ref('');
 
-    onMounted(() => {
-      items.value = mainStore.items;
-    });
+    const addTodo = () => {
+      if (newTodoTitle.value.trim() !== '') {
+        todoStore.add(newTodoTitle.value);
+        newTodoTitle.value = '';
+      }
+    };
 
-    function createItem() {
-      mainStore.createNewItem(generateFakeData());
-    }
+    const remove = (id: number) => {
+      todoStore.remove(id);
+    };
 
-    function deleteItem(id: string) {
-      mainStore.deleteItem(id);
-    }
+    const toggleCompleted = (id: number) => {
+      todoStore.toggleCompleted(id);
+    };
 
-    function updateItem(id: string) {
-      mainStore.updateItem(id, generateFakeData());
-    }
+    const filteredTodos = computed(() =>
+      todoStore.todos.filter((todo: Todo) => todo.title.toLowerCase().includes(searchTerm.value.toLowerCase()))
+    );
+
+    const searchTodo = () => {
+      // Do nothing here - computed property `filteredTodos` will update automatically
+    };
 
     return {
-      items,
-      createItem,
-      deleteItem,
-      updateItem,
+      todos: todoStore.todos,
+      newTodoTitle,
+      searchTerm,
+      filteredTodos,
+      addTodo,
+      remove,
+      toggleCompleted,
+      searchTodo,
     };
   },
 });
 </script>
 
-<style scoped>
-button {
-  background-color: orange !important;
-  border: 2px solid;
-  margin: 5px !important;
+<style>
+.completed {
+  text-decoration: line-through;
 }
 </style>
