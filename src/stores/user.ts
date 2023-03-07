@@ -19,7 +19,7 @@ export const useUserStore = defineStore({
   getters: {
     formattedUsername(): string {
       return `@${this.username}`
-    }
+    },
   },
   persist: {
     enabled: true,

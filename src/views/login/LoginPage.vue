@@ -40,17 +40,18 @@ export default {
     const uiConfig = {
       signInFlow: 'popup',
       signinSuccessUrl: 'http://localhost:8080/',
+
       signInOptions: [
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
         firebase.auth.TwitterAuthProvider.PROVIDER_ID,
         firebase.auth.GithubAuthProvider.PROVIDER_ID
       ],
+
       callbacks: {
         signInSuccessWithAuthResult: function (authResult) {
           user.value = authResult.user.displayName;
           user.setUsername(authResult.user.displayName)
           user.isSignedIn = true;
-          // localStorage.setItem('user', JSON.stringify(user));
           router.push('/');
  
           // so it doesn't refresh the page

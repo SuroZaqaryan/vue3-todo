@@ -1,7 +1,17 @@
 {
-  "users": [
+  "todos": [
     {
-      "name": "Alex"
+      "id": "81a292cc-1fe7-4f08-971c-7d7aa4fc69d4",
+      "title": "Static todo",
+      "completed": false,
+      "createdAt": "2023-03-06T22:31:40.577Z"
+    },
+    {
+      "id": "9b1c352e-f268-4402-b01c-2de9c8709edc",
+      "title": "s",
+      "completed": false,
+      "createdAt": "2023-03-07T23:14:13.258Z"
     }
-  ]
+  ],
+  "search": []
 }
