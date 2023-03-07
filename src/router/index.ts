@@ -1,12 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '@/views/home/HomePage.vue';
 import Login from '@/views/login/LoginPage.vue';
+import Test from '@/views/test/TestPage.vue'
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
     component: Login,
+    meta: {
+      isAuth: false
+    }
+  },
+  {
+    path: '/test',
+    name: 'Test',
+    component: Test,
     meta: {
       isAuth: false
     }
