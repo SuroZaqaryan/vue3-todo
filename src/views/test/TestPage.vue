@@ -5,17 +5,20 @@
       <input v-model="newTodoTitle" placeholder="Enter a new todo item" />
       <button type="submit">Add</button>
     </form>
-    <form @submit.prevent="searchTodo">
+    <form>
       <input v-model="searchTerm" placeholder="Search for a todo" />
       <button type="submit">Search</button>
     </form>
     <ul>
       <li v-for="todo in filteredTodos" :key="todo.id">
+        <p>{{ todo }}</p>
         <input type="checkbox" :checked="todo.completed" @change="toggleCompleted(todo.id)" />
         <span :class="{ completed: todo.completed }">{{ todo.title }}</span>
         <button @click="remove(todo.id)">X</button>
       </li>
     </ul>
+    <button @click="test">test</button>
+    <button @click="test1">test1</button>
   </div>
 </template>
 
@@ -37,6 +40,14 @@ export default defineComponent({
       }
     };
 
+    const test = () => {
+      todoStore.filterTodayTodos();
+    };
+
+    const test1 = () => {
+      todoStore.filterTomorrowObjects();
+    };
+
     const remove = (id: number) => {
       todoStore.remove(id);
     };
@@ -49,10 +60,6 @@ export default defineComponent({
       todoStore.todos.filter((todo: Todo) => todo.title.toLowerCase().includes(searchTerm.value.toLowerCase()))
     );
 
-    const searchTodo = () => {
-      // Do nothing here - computed property `filteredTodos` will update automatically
-    };
-
     return {
       todos: todoStore.todos,
       newTodoTitle,
@@ -61,7 +68,8 @@ export default defineComponent({
       addTodo,
       remove,
       toggleCompleted,
-      searchTodo,
+      test,
+      test1
     };
   },
 });
