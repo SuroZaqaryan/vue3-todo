@@ -6,7 +6,6 @@ import { getAuth, signOut } from "firebase/auth";
 import { useUserStore } from "@/stores/user";
 import { useTodoStore } from "@/stores/todo";
 import { TodoModel } from "@/models/todo.model";
-import { v4 as uuidv4 } from "uuid";
 
 export default defineComponent({
   name: "HomePage",
@@ -24,12 +23,25 @@ export default defineComponent({
     const options = ["Все", "Сегодняшние"];
     const selectedOption = ref<string>("");
 
-    // Получаем заметки из локального сервера
     onMounted(async () => {
-      getAllTodos();
+      const savedFilters = sessionStorage.getItem("filteredProducts");
+      const saveSelectedOption = sessionStorage.getItem("selectedOption");
+
+      if (savedFilters && saveSelectedOption !== "Все") {
+        todoStore.todos.splice(0, todoStore.todos.length);
+
+        for (const obj in JSON.parse(savedFilters)) {
+          todoStore.todos.push(JSON.parse(savedFilters)[obj]);
+        }
+      } else {
+        // Получаем заметки из локального сервера
+        getAllTodos();
+      }
     });
 
     watch(selectedOption, (newValue) => {
+      sessionStorage.setItem("selectedOption", selectedOption.value);
+
       switch (newValue) {
         case "Все":
           // Фильтр для всех заметок
@@ -58,13 +70,6 @@ export default defineComponent({
     // Задача завершена
     const toggleCompleted = (id: number) => todoStore.toggleCompleted(id);
 
-    // computed для поиска
-    const filteredTodos = computed(() =>
-      todoStore.todos.filter((todo: TodoModel) =>
-        todo.title.toLowerCase().includes(searchTerm.value.toLowerCase())
-      )
-    );
-
     // Получаем заметки
     const getAllTodos = async () => {
       try {
@@ -89,7 +94,7 @@ export default defineComponent({
       signOut(auth)
         .then(() => {
           // Sign-out successful.
-          localStorage.removeItem("user");
+          sessionStorage.removeItem("user");
           router.push("/login");
         })
         .catch((error) => {
@@ -98,20 +103,30 @@ export default defineComponent({
         });
     }
 
-    // watch(searchTerm, async () => {
-    //   await axios
-    //     .post("http://localhost:4000/search", {
-    //       ...filteredTodos.value,
-    //     })
-    //     .then((response) => {
-    //       const filtered = response.data;
-    //       console.log([filtered])
-    //       todoStore.todos = [filtered]; // update the filteredTodos variable
-    //     })
-    //     .catch((error) => {
-    //       console.error(error);
-    //     });
-    // });
+    // computed для поиска
+    const filteredTodos = computed(() =>
+      todoStore.todos.filter((todo: TodoModel) =>
+        todo.title.toLowerCase().includes(searchTerm.value.toLowerCase())
+      )
+    );
+
+    // Добавляем выбранные фильтры в sessionStorage для сохранения после обновление страницы
+    watch(searchTerm, async () => {
+      sessionStorage.setItem(
+        "filteredProducts",
+        JSON.stringify({ ...filteredTodos.value })
+      );
+
+      const savedFilters = sessionStorage.getItem("filteredProducts");
+
+      if (savedFilters) {
+        todoStore.todos.splice(0, todoStore.todos.length);
+
+        for (const obj in JSON.parse(savedFilters)) {
+          todoStore.todos.push(JSON.parse(savedFilters)[obj]);
+        }
+      }
+    });
 
     return {
       user,
